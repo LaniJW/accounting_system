@@ -1,17 +1,24 @@
+import logging
 from pprint import pprint
 
+import coloredlogs
+import dicttoxml
 from absl import app
 
 import ftp.connection_manager
+import util.bill_format
 import util.config
-import util.status_output
-from util import bill_format, status_output
 
 config_path = '../config.toml'
 
+logging.basicConfig(filename='app.log', level=logging.DEBUG,
+                    format='%(asctime)s %(module)s:%(lineno)d %(levelname)s - %(message)s')
+coloredlogs.install()
 
-def main(argv):
+
+def main(_):
     config = util.config.load_config(config_path)
+    # TODO(laniw): Check if config has all required fields and values
 
     cs = ftp.connection_manager.create_customer_server_session(config)
 
@@ -33,13 +40,13 @@ def fetch_bills(files, cs):
 def use_bill(bill, filename):
     bill = bill.decode('utf-8').replace('\r\n', '\n')
 
-    format_intact = bill_format.check_bill_format(bill)
+    format_intact = util.bill_format.check_bill_format(bill)
     if format_intact:
         json_bill = jsonify_bill(bill)
-        print(bill + '\n')
-        pprint(json_bill)
+        xml_bill = xmlify_bill(json_bill)
+        pprint(xml_bill)
     else:
-        status_output.warning_message(
+        logging.warning(
             f'File {filename} was not processed because of some format errors. Please see errors above to fix issue.')
 
 
@@ -65,7 +72,7 @@ def jsonify_bill(bill):
         elif i == 1:
             # Adds data about the contractor.
             if not info['commission']:
-                util.status_output.fatal_message('No commission data available to add client and contractor')
+                logging.warning('No commission data available to add client and contractor')
                 exit()
             info['commission']['contractor'] = {
                 'company_name': sections[2],
@@ -79,7 +86,7 @@ def jsonify_bill(bill):
         elif i == 2:
             # Adds data about the client.
             if not info['commission']:
-                util.status_output.fatal_message('No commission data available to add client and contractor')
+                logging.warning('No commission data available to add client and contractor')
                 exit()
             info['commission']['client'] = {
                 'company_name': sections[2],
@@ -107,6 +114,10 @@ def jsonify_bill(bill):
                     item['tax'] = section
             info['items'].append(item)
     return info
+
+
+def xmlify_bill(json_bill):
+    return dicttoxml.dicttoxml(json_bill)
 
 
 if __name__ == '__main__':

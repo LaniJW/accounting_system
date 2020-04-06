@@ -1,6 +1,5 @@
 import ftplib
-
-from util import status_output
+import logging
 
 customer_server_session = None
 accounting_server_session = None
@@ -20,7 +19,7 @@ def create_accounting_server_session(config):
 
 def close_customer_server_session():
     if not customer_server_session:
-        status_output.error_message('No customer server session to close.')
+        logging.error('No customer server session to close.', line=util.get_file_linenumber())
         return False
     else:
         customer_server_session.quit()
@@ -29,7 +28,7 @@ def close_customer_server_session():
 
 def close_accounting_server_session():
     if not accounting_server_session:
-        status_output.error_message('No accounting server session to close.')
+        logging.critical('No accounting server session to close.', line=util.get_file_linenumber())
         return False
     else:
         accounting_server_session.quit()

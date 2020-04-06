@@ -1,12 +1,12 @@
-import toml
+import logging
 
-import util.status_output
+import toml
 
 
 def load_config(path):
     try:
         conf = toml.load(path)
     except FileNotFoundError:
-        util.status_output.fatal_message('Configuration file was not found at specified path: {}'.format(path))
+        logging.warning('Configuration file was not found at specified path: {}'.format(path))
         exit()
     return conf
