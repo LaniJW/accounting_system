@@ -84,6 +84,7 @@ def jsonify_bill(bill):
                 exit()
             info['commission']['contractor'] = {
                 'company_name': sections[2],
+                'company_id': sections[6],
                 'contact_name': sections[3],
                 'email': sections[7],
                 'client_id': sections[1],
