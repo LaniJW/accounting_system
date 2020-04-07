@@ -88,7 +88,7 @@ def jsonify_bill(bill):
                 'email': sections[7],
                 'client_id': sections[1],
                 'address': {
-                    'street': get_street_number_dict(sections[3]),
+                    'street': get_street_number_dict(sections[4]),
                     'city': get_plz_city_dict(sections[5])
                 }
             }
