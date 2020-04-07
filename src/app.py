@@ -190,6 +190,8 @@ def xmlify_bill(json_bill):
     et.SubElement(vat_information, 'BV.020_MwSt_Nummer_des_Lieferanten').text = json_bill['commission']['contractor'][
         'company_id']
 
+    # TODO(laniw): Add converters for invoice details and invoice summary.
+
     tree = et.ElementTree(root)
     tree.write('bill.xml')
     return dicttoxml.dicttoxml(json_bill)
