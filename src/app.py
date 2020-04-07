@@ -177,6 +177,13 @@ def xmlify_bill(json_bill):
     et.SubElement(billing_address, 'BV.110_Stadt').text = json_bill['commission']['client']['address']['city']['city']
     et.SubElement(billing_address, 'BV.120_Land').text = 'CH'
 
+    payment_conditions = et.SubElement(invoice_header, 'I.H.080_Zahlungsbedingungen')
+    et.SubElement(payment_conditions, 'BV.010_Zahlungsbedingungen').text = 'Faelligkeitsdatum'
+    et.SubElement(payment_conditions, 'BV.020_Zahlungsbedingungen_Zusatzwert').text = get_due_date(
+        get_date_time_from_json(
+            json_bill['commission']['date'],
+            json_bill['commission']['time']), json_bill['commission']['deadline_days'])
+
     tree = et.ElementTree(root)
     tree.write('bill.xml')
     return dicttoxml.dicttoxml(json_bill)
