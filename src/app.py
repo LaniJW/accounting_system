@@ -132,6 +132,17 @@ def xmlify_bill(json_bill):
 
     invoice_header = et.SubElement(root, 'Invoice_Header')
 
+    basedata = et.SubElement(invoice_header, 'I.H.010_Basisdaten')
+    et.SubElement(basedata, 'BV.010_Rechnungsnummer').text = json_bill['commission']['name']
+    et.SubElement(basedata, 'BV.020_Rechnungsdatum').text = get_date_time_from_json(json_bill['commission']['date'],
+                                                                                    json_bill['commission']['time'])
+    et.SubElement(basedata, 'BV.030_Funktion_des_Dokuments').text = 'Original'
+    et.SubElement(basedata, 'BV.040_Typ_des_Dokuments').text = 'Rechnung'
+    et.SubElement(basedata, 'BV.050_Rechnungs_Endkennzeichen').text = 'vollstaendige Rechnung'
+    et.SubElement(basedata, 'BV.060_Bestellnummer_des_Kaeufers')
+    et.SubElement(basedata, 'BV.080_Waehrung').text = 'CHF'
+    et.SubElement(basedata, 'BV.090_Sprache').text = 'de'
+
     tree = et.ElementTree(root)
     tree.write('bill.xml')
     return dicttoxml.dicttoxml(json_bill)
