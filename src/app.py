@@ -78,6 +78,7 @@ def jsonify_bill(bill):
                 'company_name': sections[2],
                 'contact_name': sections[3],
                 'email': sections[7],
+                'client_id': sections[1],
                 'address': {
                     'street': sections[4],
                     'city': sections[5]
@@ -90,6 +91,7 @@ def jsonify_bill(bill):
                 exit()
             info['commission']['client'] = {
                 'company_name': sections[2],
+                'client_id': sections[1],
                 'address': {
                     'street': sections[3],
                     'city': sections[4]
