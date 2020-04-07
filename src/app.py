@@ -157,6 +157,20 @@ def xmlify_bill(json_bill):
         'city']
     et.SubElement(client_identification, 'BV.120_Land').text = 'CH'
 
+    contractor_identification = et.SubElement(invoice_header, 'I.H.030_Lieferanten_Identifikation')
+    et.SubElement(contractor_identification, 'BV.010_Nr_Lieferant_beim_Kaeufer').text = \
+        json_bill['commission']['contractor']['company_name']
+    et.SubElement(contractor_identification, 'BV.030_Nr_Lieferant_bei_ETS').text = config['data']['email_address']
+    et.SubElement(contractor_identification, 'BV.040_Name1').text = \
+        json_bill['commission']['contractor']['company_name']
+    et.SubElement(contractor_identification, 'BV.070_Strasse').text = \
+        json_bill['commission']['contractor']['address']['street']
+    et.SubElement(contractor_identification, 'BV.100_PLZ').text = \
+        json_bill['commission']['contractor']['address']['city']['plz']
+    et.SubElement(contractor_identification, 'BV.110_Stadt').text = \
+        json_bill['commission']['contractor']['address']['city']['city']
+    et.SubElement(contractor_identification, 'BV.120_Land').text = 'CH'
+
     tree = et.ElementTree(root)
     tree.write('bill.xml')
     return dicttoxml.dicttoxml(json_bill)
