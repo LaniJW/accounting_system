@@ -197,6 +197,12 @@ def xmlify_bill(json_bill):
     return dicttoxml.dicttoxml(json_bill)
 
 
+def get_date_time_from_json(date_json, time_json):
+    return datetime.datetime(year=date_json['year'], month=date_json['month'], day=date_json['day'],
+                             hour=time_json['hour'],
+                             minute=time_json['minute'], second=time_json['second'])
+
+
 def get_street_number_dict(street_number_compound):
     sections = street_number_compound.split(' ')
     number = sections[-1]
