@@ -46,7 +46,7 @@ def use_bill(bill, filename):
     if format_intact:
         json_bill = jsonify_bill(bill)
         xml_bill = xmlify_bill(json_bill)
-        pprint(xml_bill)
+        print(xml_bill)
     else:
         logging.warning(
             f'File {filename} was not processed because of some format errors. Please see errors above to fix issue.')
@@ -136,8 +136,8 @@ def xmlify_bill(json_bill):
 
     basedata = et.SubElement(invoice_header, 'I.H.010_Basisdaten')
     et.SubElement(basedata, 'BV.010_Rechnungsnummer').text = json_bill['commission']['name']
-    et.SubElement(basedata, 'BV.020_Rechnungsdatum').text = get_date_time_from_json(json_bill['commission']['date'],
-                                                                                    json_bill['commission']['time'])
+    et.SubElement(basedata, 'BV.020_Rechnungsdatum').text = str(
+        get_date_time_from_json(json_bill['commission']['date'], json_bill['commission']['time']))
     et.SubElement(basedata, 'BV.030_Funktion_des_Dokuments').text = 'Original'
     et.SubElement(basedata, 'BV.040_Typ_des_Dokuments').text = 'Rechnung'
     et.SubElement(basedata, 'BV.050_Rechnungs_Endkennzeichen').text = 'vollstaendige Rechnung'
@@ -152,8 +152,8 @@ def xmlify_bill(json_bill):
     et.SubElement(client_identification, 'BV.030_Nr_Kaeufer_bei_ETS').text = json_bill['commission']['client'][
         'client_id']
     et.SubElement(client_identification, 'BV.035_Typ_der_Handelsplatz_ID').text = 'TPID'
-    et.SubElement(client_identification, 'BV.040_Name1').text = json_bill['commission']['client']['client_name']
-    et.SubElement(client_identification, 'BV.100_PLZ').text = json_bill['commission']['client']['address']['plz'][
+    et.SubElement(client_identification, 'BV.040_Name1').text = json_bill['commission']['client']['company_name']
+    et.SubElement(client_identification, 'BV.100_PLZ').text = json_bill['commission']['client']['address']['city'][
         'plz']
     et.SubElement(client_identification, 'BV.110_Stadt').text = json_bill['commission']['client']['address']['city'][
         'city']
@@ -166,7 +166,7 @@ def xmlify_bill(json_bill):
     et.SubElement(contractor_identification, 'BV.040_Name1').text = \
         json_bill['commission']['contractor']['company_name']
     et.SubElement(contractor_identification, 'BV.070_Strasse').text = \
-        json_bill['commission']['contractor']['address']['street']
+        json_bill['commission']['contractor']['address']['street']['street']
     et.SubElement(contractor_identification, 'BV.100_PLZ').text = \
         json_bill['commission']['contractor']['address']['city']['plz']
     et.SubElement(contractor_identification, 'BV.110_Stadt').text = \
@@ -181,10 +181,10 @@ def xmlify_bill(json_bill):
 
     payment_conditions = et.SubElement(invoice_header, 'I.H.080_Zahlungsbedingungen')
     et.SubElement(payment_conditions, 'BV.010_Zahlungsbedingungen').text = 'Faelligkeitsdatum'
-    et.SubElement(payment_conditions, 'BV.020_Zahlungsbedingungen_Zusatzwert').text = get_due_date(
+    et.SubElement(payment_conditions, 'BV.020_Zahlungsbedingungen_Zusatzwert').text = str(get_due_date(
         get_date_time_from_json(
             json_bill['commission']['date'],
-            json_bill['commission']['time']), json_bill['commission']['deadline_days'])
+            json_bill['commission']['time']), json_bill['commission']['deadline_days']))
 
     vat_information = et.SubElement(invoice_header, 'I.H.140_MwSt._Informationen')
     et.SubElement(vat_information, 'BV.010_Eingetragener_Name_des_Lieferanten').text = \
@@ -196,18 +196,17 @@ def xmlify_bill(json_bill):
 
     tree = et.ElementTree(root)
     tree.write('bill.xml')
-    return dicttoxml.dicttoxml(json_bill)
+    return et.tostring(root, 'utf8')
 
 
 def get_date_time_from_json(date_json, time_json):
-    return datetime.datetime(year=date_json['year'], month=date_json['month'], day=date_json['day'],
-                             hour=time_json['hour'],
-                             minute=time_json['minute'], second=time_json['second'])
+    return datetime.datetime(year=int(date_json['year']), month=int(date_json['month']), day=int(date_json['day']),
+                             hour=int(time_json['hour']), minute=int(time_json['minute']),
+                             second=int(time_json['second']))
 
 
 def get_due_date(date_of_issue, deadline_days):
-    print(date_of_issue + datetime.timedelta(days=deadline_days))
-    return date_of_issue + datetime.timedelta(days=deadline_days)
+    return date_of_issue + datetime.timedelta(days=int(deadline_days))
 
 
 def get_street_number_dict(street_number_compound):
