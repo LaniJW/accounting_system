@@ -184,6 +184,12 @@ def xmlify_bill(json_bill):
             json_bill['commission']['date'],
             json_bill['commission']['time']), json_bill['commission']['deadline_days'])
 
+    vat_information = et.SubElement(invoice_header, 'I.H.140_MwSt._Informationen')
+    et.SubElement(vat_information, 'BV.010_Eingetragener_Name_des_Lieferanten').text = \
+        json_bill['commission']['contractor']['company_name']
+    et.SubElement(vat_information, 'BV.020_MwSt_Nummer_des_Lieferanten').text = json_bill['commission']['contractor'][
+        'company_id']
+
     tree = et.ElementTree(root)
     tree.write('bill.xml')
     return dicttoxml.dicttoxml(json_bill)
