@@ -128,6 +128,10 @@ def jsonify_bill(bill):
 
 
 def xmlify_bill(json_bill):
+    root = et.Element('Invoice', version='3.1', doctype='ETS Invoice')
+
+    tree = et.ElementTree(root)
+    tree.write('bill.xml')
     return dicttoxml.dicttoxml(json_bill)
 
 
