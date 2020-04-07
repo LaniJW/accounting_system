@@ -10,6 +10,7 @@ import util.bill_format
 import util.config
 
 config_path = '../config.toml'
+config = util.config.load_config(config_path)
 
 logging.basicConfig(filename='app.log', level=logging.DEBUG,
                     format='%(asctime)s %(module)s:%(lineno)d %(levelname)s - %(message)s')
@@ -17,7 +18,6 @@ coloredlogs.install()
 
 
 def main(_):
-    config = util.config.load_config(config_path)
     # TODO(laniw): Check if config has all required fields and values
 
     cs = ftp.connection_manager.create_customer_server_session(config)
@@ -65,9 +65,17 @@ def jsonify_bill(bill):
             info['commission'] = {
                 'name': sections[1],
                 'location': sections[2],
-                'date': sections[3],
-                'time': sections[4],
-                'deadline': sections[5],
+                'date': {
+                    'year': sections[3].split('.')[2],
+                    'month': sections[3].split('.')[1],
+                    'day': sections[3].split('.')[0]
+                },
+                'time': {
+                    'hour': sections[4].split(':')[0],
+                    'minute': sections[4].split(':')[1],
+                    'second': sections[4].split(':')[2]
+                },
+                'deadline_days': sections[5].split('_')[1]
             }
         elif i == 1:
             # Adds data about the contractor.
@@ -80,8 +88,8 @@ def jsonify_bill(bill):
                 'email': sections[7],
                 'client_id': sections[1],
                 'address': {
-                    'street': sections[4],
-                    'city': sections[5]
+                    'street': get_street_number_dict(sections[3]),
+                    'city': get_plz_city_dict(sections[5])
                 }
             }
         elif i == 2:
@@ -93,8 +101,8 @@ def jsonify_bill(bill):
                 'company_name': sections[2],
                 'client_id': sections[1],
                 'address': {
-                    'street': sections[3],
-                    'city': sections[4]
+                    'street': get_street_number_dict(sections[3]),
+                    'city': get_plz_city_dict(sections[4])
                 }
             }
         else:
@@ -120,6 +128,28 @@ def jsonify_bill(bill):
 
 def xmlify_bill(json_bill):
     return dicttoxml.dicttoxml(json_bill)
+
+
+def get_street_number_dict(street_number_compound):
+    sections = street_number_compound.split(' ')
+    number = sections[-1]
+    sections.remove(number)
+    street = ' '.join(sections)
+    return {
+        'street': street,
+        'number': number
+    }
+
+
+def get_plz_city_dict(plz_city_compound):
+    sections = plz_city_compound.split(' ')
+    plz = sections[0]
+    sections.remove(plz)
+    city = ' '.join(sections)
+    return {
+        'city': city,
+        'plz': plz
+    }
 
 
 if __name__ == '__main__':
