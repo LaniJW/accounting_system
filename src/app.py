@@ -203,6 +203,11 @@ def get_date_time_from_json(date_json, time_json):
                              minute=time_json['minute'], second=time_json['second'])
 
 
+def get_due_date(date_of_issue, deadline_days):
+    print(date_of_issue + datetime.timedelta(days=deadline_days))
+    return date_of_issue + datetime.timedelta(days=deadline_days)
+
+
 def get_street_number_dict(street_number_compound):
     sections = street_number_compound.split(' ')
     number = sections[-1]
