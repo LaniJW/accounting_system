@@ -7,7 +7,7 @@ def xmlify_bill(json_bill):
 
     invoice_header = et.SubElement(root, 'Invoice_Header')
 
-    add_invoice_header(invoice_header, json_bill)
+    add_basedata(invoice_header, json_bill)
 
     # TODO(laniw): Add converters for invoice details and invoice summary.
 
@@ -16,7 +16,7 @@ def xmlify_bill(json_bill):
     return et.tostring(root, 'utf8')
 
 
-def add_invoice_header(invoice_header, json_bill):
+def add_basedata(invoice_header, json_bill):
     basedata = et.SubElement(invoice_header, 'I.H.010_Basisdaten')
     et.SubElement(basedata, 'BV.010_Rechnungsnummer').text = json_bill['commission']['name']
     et.SubElement(basedata, 'BV.020_Rechnungsdatum').text = str(
