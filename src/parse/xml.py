@@ -1,13 +1,15 @@
 import datetime
 import xml.etree.cElementTree as et
 
+CONFIG = None
 
-def xmlify_bill(json_bill):
+def xmlify_bill(json_bill, config):
+    global CONFIG
+
     root = et.Element('Invoice', version='3.1', doctype='ETS Invoice')
+    CONFIG = config
 
-    invoice_header = et.SubElement(root, 'Invoice_Header')
-
-    add_basedata(invoice_header, json_bill)
+    add_invoice_header(root, json_bill)
 
     # TODO(laniw): Add converters for invoice details and invoice summary.
 
@@ -16,7 +18,9 @@ def xmlify_bill(json_bill):
     return et.tostring(root, 'utf8')
 
 
-def add_basedata(invoice_header, json_bill):
+def add_invoice_header(root, json_bill):
+    invoice_header = et.SubElement(root, 'Invoice_Header')
+
     basedata = et.SubElement(invoice_header, 'I.H.010_Basisdaten')
     et.SubElement(basedata, 'BV.010_Rechnungsnummer').text = json_bill['commission']['name']
     et.SubElement(basedata, 'BV.020_Rechnungsdatum').text = str(
@@ -45,7 +49,7 @@ def add_basedata(invoice_header, json_bill):
     contractor_identification = et.SubElement(invoice_header, 'I.H.030_Lieferanten_Identifikation')
     et.SubElement(contractor_identification, 'BV.010_Nr_Lieferant_beim_Kaeufer').text = \
         json_bill['commission']['contractor']['company_name']
-    et.SubElement(contractor_identification, 'BV.030_Nr_Lieferant_bei_ETS').text = config['data']['email_address']
+    et.SubElement(contractor_identification, 'BV.030_Nr_Lieferant_bei_ETS').text = CONFIG['data']['email_address']
     et.SubElement(contractor_identification, 'BV.040_Name1').text = \
         json_bill['commission']['contractor']['company_name']
     et.SubElement(contractor_identification, 'BV.070_Strasse').text = \

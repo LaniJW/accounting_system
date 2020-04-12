@@ -43,7 +43,7 @@ def use_bill(bill, filename):
     format_intact = util.bill_format.check_bill_format(bill)
     if format_intact:
         json_bill = parse.json.jsonify_bill(bill)
-        xml_bill = parse.xml.xmlify_bill(json_bill)
+        xml_bill = parse.xml.xmlify_bill(json_bill, config)
         print(xml_bill)
     else:
         logging.warning(
