@@ -111,7 +111,6 @@ def add_invoice_detail(root, json_bill):
         et.SubElement(taxes, 'BV.010_Funktion_der_Steuer').text = 'Steuer'
         et.SubElement(taxes, 'BV.020_Steuersatz_Kategorie').text = 'Standard Satz'
         et.SubElement(taxes, 'BV.030_Steuersatz').text = item['tax']
-        # Is this supposed to be the total value of the whole bill?
         et.SubElement(taxes, 'BV.040_Zu_versteuernder_Betrag').text = get_total_price(json_bill['items'])
         # Can this just be 0.00 statically since the VAT is always 0%?
         et.SubElement(taxes, 'BV.050_Steuerbetrag').text = '0.00'
