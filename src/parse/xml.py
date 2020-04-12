@@ -3,6 +3,7 @@ import xml.etree.cElementTree as et
 
 CONFIG = None
 
+
 def xmlify_bill(json_bill, config):
     global CONFIG
 
@@ -10,6 +11,7 @@ def xmlify_bill(json_bill, config):
     CONFIG = config
 
     add_invoice_header(root, json_bill)
+    add_invoice_detail(root, json_bill)
 
     # TODO(laniw): Add converters for invoice details and invoice summary.
 
@@ -78,6 +80,40 @@ def add_invoice_header(root, json_bill):
         json_bill['commission']['contractor']['company_name']
     et.SubElement(vat_information, 'BV.020_MwSt_Nummer_des_Lieferanten').text = json_bill['commission']['contractor'][
         'company_id']
+
+
+def add_invoice_detail(root, json_bill):
+    invoice_detail = et.SubElement(root, 'Invoice_Detail')
+    invoice_items = et.SubElement(invoice_detail, 'Invoice_Items')
+
+    for item in json_bill['items']:
+        basedata = et.SubElement(invoice_items, 'I.D.010_Basisdaten')
+        et.SubElement(basedata, 'BV.010_Positions_Nr_in_der_Rechnung').text = item['id']
+        # What is this data even supposed to be?
+        et.SubElement(basedata, 'BV.020_Artikel_Nr_des_Lieferanten').text = '?'
+        et.SubElement(basedata, 'BV.070_Artikel_Beschreibung').text = item['description']
+        et.SubElement(basedata, 'BV.140_Abschlussdatum_der_Lieferung_Ausfuehrung').text = str(
+            get_date_time_from_json(json_bill['commission']['date'], json_bill['commission']['time']))
+
+        price_and_amount = et.SubElement(invoice_items, 'I.D.020_Preise_und_Mengen')
+        et.SubElement(price_and_amount, 'BV.010_Verrechnete_Menge').text = item['amount']
+        et.SubElement(price_and_amount, 'BV.020_Mengeneinheit_der_verrechneten_Menge').text = 'BLL'
+        # Why is this marked as total value of position if the name is not matching?
+        et.SubElement(price_and_amount, 'BV.030_Verrechneter_Einzelpreis_des_Artikels').text = item['price_per_item']
+        et.SubElement(price_and_amount, 'BV.040_Waehrung_des_Einzelpreises').text = 'CHF'
+        et.SubElement(price_and_amount, 'BV.070_Bestaetigter_Gesamtpreis_der_Position_netto').text = item['price_total']
+        et.SubElement(price_and_amount, 'BV.080_Bestaetigter_Gesamtpreis_der_Position_brutto').text = item[
+            'price_total']
+        et.SubElement(price_and_amount, 'BV.090_Waehrung_des_Gesamtpreises').text = 'CHF'
+
+        taxes = et.SubElement(invoice_items, 'I.D.030_Steuern')
+        et.SubElement(taxes, 'BV.010_Funktion_der_Steuer').text = 'Steuer'
+        et.SubElement(taxes, 'BV.020_Steuersatz_Kategorie').text = 'Standard Satz'
+        et.SubElement(taxes, 'BV.030_Steuersatz').text = item['tax']
+        # Can this just be the total_value?
+        et.SubElement(taxes, 'BV.040_Zu_versteuernder_Betrag').text = item['price_total']
+        # Can this just be 0.00 statically since the VAT is always 0%?
+        et.SubElement(taxes, 'BV.050_Steuerbetrag').text = '0.00'
 
 
 def get_date_time_from_json(date_json, time_json):
