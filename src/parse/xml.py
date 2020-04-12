@@ -12,6 +12,7 @@ def xmlify_bill(json_bill, config):
 
     add_invoice_header(root, json_bill)
     add_invoice_detail(root, json_bill)
+    add_invoice_summary(root, json_bill)
 
     # TODO(laniw): Add converters for invoice details and invoice summary.
 
@@ -114,6 +115,36 @@ def add_invoice_detail(root, json_bill):
         et.SubElement(taxes, 'BV.040_Zu_versteuernder_Betrag').text = get_total_price(json_bill['items'])
         # Can this just be 0.00 statically since the VAT is always 0%?
         et.SubElement(taxes, 'BV.050_Steuerbetrag').text = '0.00'
+
+
+def add_invoice_summary(root, json_bill):
+    invoice_summary = et.SubElement(root, 'Invoice_Summary')
+
+    basedata = et.SubElement(invoice_summary, 'I.S.010_Basisdaten')
+    et.SubElement(basedata, 'BV.010_Anzahl_der_Rechnungspositionen').text = str(len(json_bill['items']))
+    et.SubElement(basedata, 'BV.020_Gesamtbetrag_der_Rechnung_exkl_MwSt_exkl_Ab_Zuschlag').text = get_total_price(
+        json_bill['items'])
+    et.SubElement(basedata, 'BV.030_Waehrung_Gesamtbetrag_der_Rechnung_exkl_MwSt_exkl_Ab_Zuschlag').text = 'CHF'
+    et.SubElement(basedata, 'BV.040_Gesamtbetrag_der_Rechnung_exkl_MwSt_inkl_Ab_Zuschlag').text = get_total_price(
+        json_bill['items'])
+    et.SubElement(basedata, 'BV.050_Waehrung_Gesamtbetrag_der_Rechnung_exkl_MwSt_inkl_Ab_Zuschlag').text = 'CHF'
+    # Can this just be 0.00?
+    et.SubElement(basedata, 'BV.060_Steuerbetrag').text = '0.00'
+    et.SubElement(basedata, 'BV.070_Waehrung_des_Steuerbetrags').text = 'CHF'
+    # Can this just be the total value of the whole bill?
+    et.SubElement(basedata, 'BV.080_Gesamtbetrag_der_Rechnung_inkl_MwSt_inkl_Ab_Zuschlag').text = get_total_price(
+        json_bill['items'])
+    et.SubElement(basedata, 'BV.090_Waehrung_Gesamtbetrag_der_Rechnung_inkl_MwSt_inkl_Ab_Zuschlag').text = 'CHF'
+
+    tax_breakdown = et.SubElement(invoice_summary, 'I.S.020_Aufschluesselung_der_Steuern')
+    et.SubElement(tax_breakdown, 'BV.010_Funktion_der_Steuer').text = 'Steuer'
+    et.SubElement(tax_breakdown, 'BV.020_Steuersatz_Kategorie').text = 'Standard Satz'
+    # Can this just be the default value of VAT?
+    et.SubElement(tax_breakdown, 'BV.030_Steuersatz').text = 'MWST_0.00%'
+    et.SubElement(tax_breakdown, 'BV.040_Zu_versteuernder_Betrag').text = get_total_price(json_bill['items'])
+    # Can this just be 0.00?
+    et.SubElement(tax_breakdown, 'BV.050_Steuerbetrag').text = '0.00'
+    et.SubElement(tax_breakdown, 'BV.055_Waehrung_Steuerbetrag').text = 'CHF'
 
 
 def get_total_price(items):
