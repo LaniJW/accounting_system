@@ -23,7 +23,7 @@ def add_invoice_header(root, json_bill):
     invoice_header = et.SubElement(root, 'Invoice_Header')
 
     basedata = et.SubElement(invoice_header, 'I.H.010_Basisdaten')
-    et.SubElement(basedata, 'BV.010_Rechnungsnummer').text = json_bill['commission']['name']
+    et.SubElement(basedata, 'BV.010_Rechnungsnummer').text = json_bill['commission']['number']
     et.SubElement(basedata, 'BV.020_Rechnungsdatum').text = str(
         get_date_time_from_json(json_bill['commission']['date'], json_bill['commission']['time']))
     et.SubElement(basedata, 'BV.030_Funktion_des_Dokuments').text = 'Original'
