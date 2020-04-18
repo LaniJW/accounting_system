@@ -12,7 +12,7 @@ def jsonify_bill(bill):
 
         if i == 0:
             # Adds general data about commission.
-            info['title'] = sections[0]
+            info['bill_nr'] = sections[0].split('_')[1]
             info['commission'] = {
                 'number': sections[1].split('_')[1],
                 'location': sections[2],
