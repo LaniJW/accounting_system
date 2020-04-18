@@ -45,9 +45,11 @@ def use_bill(bill, filename):
     format_intact = util.bill_format.check_bill_format(bill)
     if format_intact:
         json_bill = parse.json.jsonify_bill(bill)
+        logging.info('Parsing to JSON done.')
         xml_bill = parse.xml.xmlify_bill(json_bill, config)
+        logging.info('Parsing to XML done.')
         txt_bill = parse.txt.txtify_bill(json_bill)
-        print(xml_bill)
+        logging.info('Parsing to txt done.')
     else:
         logging.warning(
             f'File {filename} was not processed because of some format errors. Please see errors above to fix issue.')
