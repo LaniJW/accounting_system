@@ -1,7 +1,7 @@
 import datetime
 import xml.etree.cElementTree as et
 
-from parse.util import get_total_price
+import parse.util
 
 CONFIG = None
 
@@ -26,7 +26,7 @@ def add_invoice_header(root, json_bill):
 
     basedata = et.SubElement(invoice_header, 'I.H.010_Basisdaten')
     et.SubElement(basedata, 'BV.010_Rechnungsnummer').text = \
-    json_bill['commission']['number']
+        json_bill['commission']['number']
     et.SubElement(basedata, 'BV.020_Rechnungsdatum').text = str(
         get_date_time_from_json(json_bill['commission']['date'],
                                 json_bill['commission']['time']))
@@ -44,21 +44,21 @@ def add_invoice_header(root, json_bill):
                   'BV.010_Nr_Kaeufer_beim_Lieferanten').text = 'undef'
     et.SubElement(client_identification,
                   'BV.020_Nr_Kaeufer_beim_Kaeufer').text = \
-    json_bill['commission']['contractor'][
-        'client_id']
+        json_bill['commission']['contractor'][
+            'client_id']
     et.SubElement(client_identification, 'BV.030_Nr_Kaeufer_bei_ETS').text = \
-    json_bill['commission']['client'][
-        'client_id']
+        json_bill['commission']['client'][
+            'client_id']
     et.SubElement(client_identification,
                   'BV.035_Typ_der_Handelsplatz_ID').text = 'TPID'
     et.SubElement(client_identification, 'BV.040_Name1').text = \
-    json_bill['commission']['client']['company_name']
+        json_bill['commission']['client']['company_name']
     et.SubElement(client_identification, 'BV.100_PLZ').text = \
-    json_bill['commission']['client']['address']['city'][
-        'plz']
+        json_bill['commission']['client']['address']['city'][
+            'plz']
     et.SubElement(client_identification, 'BV.110_Stadt').text = \
-    json_bill['commission']['client']['address']['city'][
-        'city']
+        json_bill['commission']['client']['address']['city'][
+            'city']
     et.SubElement(client_identification, 'BV.120_Land').text = 'CH'
 
     contractor_identification = et.SubElement(invoice_header,
@@ -81,11 +81,11 @@ def add_invoice_header(root, json_bill):
 
     billing_address = et.SubElement(invoice_header, 'I.H.040_Rechnungsadresse')
     et.SubElement(billing_address, 'BV.040_Name1').text = \
-    json_bill['commission']['client']['company_name']
+        json_bill['commission']['client']['company_name']
     et.SubElement(billing_address, 'BV.100_PLZ').text = \
-    json_bill['commission']['client']['address']['city']['plz']
+        json_bill['commission']['client']['address']['city']['plz']
     et.SubElement(billing_address, 'BV.110_Stadt').text = \
-    json_bill['commission']['client']['address']['city']['city']
+        json_bill['commission']['client']['address']['city']['city']
     et.SubElement(billing_address, 'BV.120_Land').text = 'CH'
 
     payment_conditions = et.SubElement(invoice_header,
@@ -94,7 +94,7 @@ def add_invoice_header(root, json_bill):
                   'BV.010_Zahlungsbedingungen').text = 'Faelligkeitsdatum'
     et.SubElement(payment_conditions,
                   'BV.020_Zahlungsbedingungen_Zusatzwert').text = str(
-        get_due_date(
+        parse.util.get_due_date(
             get_date_time_from_json(
                 json_bill['commission']['date'],
                 json_bill['commission']['time']),
@@ -106,8 +106,8 @@ def add_invoice_header(root, json_bill):
                   'BV.010_Eingetragener_Name_des_Lieferanten').text = \
         json_bill['commission']['contractor']['company_name']
     et.SubElement(vat_information, 'BV.020_MwSt_Nummer_des_Lieferanten').text = \
-    json_bill['commission']['contractor'][
-        'company_id']
+        json_bill['commission']['contractor'][
+            'company_id']
 
 
 def add_invoice_detail(root, json_bill):
@@ -117,9 +117,9 @@ def add_invoice_detail(root, json_bill):
     for item in json_bill['items']:
         basedata = et.SubElement(invoice_items, 'I.D.010_Basisdaten')
         et.SubElement(basedata, 'BV.010_Positions_Nr_in_der_Rechnung').text = \
-        item['id']
+            item['id']
         et.SubElement(basedata, 'BV.020_Artikel_Nr_des_Lieferanten').text = \
-        item['id']
+            item['id']
         et.SubElement(basedata, 'BV.070_Artikel_Beschreibung').text = item[
             'description']
         et.SubElement(basedata,
@@ -135,16 +135,16 @@ def add_invoice_detail(root, json_bill):
                       'BV.020_Mengeneinheit_der_verrechneten_Menge').text = 'BLL'
         et.SubElement(price_and_amount,
                       'BV.030_Verrechneter_Einzelpreis_des_Artikels').text = \
-        item['price_per_item']
+            item['price_per_item']
         et.SubElement(price_and_amount,
                       'BV.040_Waehrung_des_Einzelpreises').text = 'CHF'
         et.SubElement(price_and_amount,
                       'BV.070_Bestaetigter_Gesamtpreis_der_Position_netto').text = \
-        item['price_total']
+            item['price_total']
         et.SubElement(price_and_amount,
                       'BV.080_Bestaetigter_Gesamtpreis_der_Position_brutto').text = \
-        item[
-            'price_total']
+            item[
+                'price_total']
         et.SubElement(price_and_amount,
                       'BV.090_Waehrung_des_Gesamtpreises').text = 'CHF'
 
@@ -154,7 +154,7 @@ def add_invoice_detail(root, json_bill):
                       'BV.020_Steuersatz_Kategorie').text = 'Standard Satz'
         et.SubElement(taxes, 'BV.030_Steuersatz').text = item['tax']
         et.SubElement(taxes, 'BV.040_Zu_versteuernder_Betrag').text = str(
-            get_total_price(json_bill['items']))
+            parse.util.get_total_price(json_bill['items']))
         et.SubElement(taxes, 'BV.050_Steuerbetrag').text = '0.00'
 
 
@@ -166,19 +166,19 @@ def add_invoice_summary(root, json_bill):
         len(json_bill['items']))
     et.SubElement(basedata,
                   'BV.020_Gesamtbetrag_der_Rechnung_exkl_MwSt_exkl_Ab_Zuschlag').text = str(
-        get_total_price(json_bill['items']))
+        parse.util.get_total_price(json_bill['items']))
     et.SubElement(basedata,
                   'BV.030_Waehrung_Gesamtbetrag_der_Rechnung_exkl_MwSt_exkl_Ab_Zuschlag').text = 'CHF'
     et.SubElement(basedata,
                   'BV.040_Gesamtbetrag_der_Rechnung_exkl_MwSt_inkl_Ab_Zuschlag').text = str(
-        get_total_price(json_bill['items']))
+        parse.util.get_total_price(json_bill['items']))
     et.SubElement(basedata,
                   'BV.050_Waehrung_Gesamtbetrag_der_Rechnung_exkl_MwSt_inkl_Ab_Zuschlag').text = 'CHF'
     et.SubElement(basedata, 'BV.060_Steuerbetrag').text = '0.00'
     et.SubElement(basedata, 'BV.070_Waehrung_des_Steuerbetrags').text = 'CHF'
     et.SubElement(basedata,
                   'BV.080_Gesamtbetrag_der_Rechnung_inkl_MwSt_inkl_Ab_Zuschlag').text = str(
-        get_total_price(json_bill['items']))
+        parse.util.get_total_price(json_bill['items']))
     et.SubElement(basedata,
                   'BV.090_Waehrung_Gesamtbetrag_der_Rechnung_inkl_MwSt_inkl_Ab_Zuschlag').text = 'CHF'
 
@@ -189,7 +189,7 @@ def add_invoice_summary(root, json_bill):
                   'BV.020_Steuersatz_Kategorie').text = 'Standard Satz'
     et.SubElement(tax_breakdown, 'BV.030_Steuersatz').text = 'MWST_0.00%'
     et.SubElement(tax_breakdown, 'BV.040_Zu_versteuernder_Betrag').text = str(
-        get_total_price(json_bill['items']))
+        parse.util.get_total_price(json_bill['items']))
     et.SubElement(tax_breakdown, 'BV.050_Steuerbetrag').text = '0.00'
     et.SubElement(tax_breakdown, 'BV.055_Waehrung_Steuerbetrag').text = 'CHF'
 
@@ -201,7 +201,3 @@ def get_date_time_from_json(date_json, time_json):
                              hour=int(time_json['hour']),
                              minute=int(time_json['minute']),
                              second=int(time_json['second']))
-
-
-def get_due_date(date_of_issue, deadline_days):
-    return date_of_issue + datetime.timedelta(days=int(deadline_days))
