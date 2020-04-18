@@ -14,7 +14,7 @@ def jsonify_bill(bill):
             # Adds general data about commission.
             info['title'] = sections[0]
             info['commission'] = {
-                'name': sections[1],
+                'number': sections[1].split('_')[1],
                 'location': sections[2],
                 'date': {
                     'year': sections[3].split('.')[2],
@@ -31,7 +31,8 @@ def jsonify_bill(bill):
         elif i == 1:
             # Adds data about the contractor.
             if not info['commission']:
-                logging.warning('No commission data available to add client and contractor')
+                logging.warning(
+                    'No commission data available to add client and contractor')
                 exit()
             info['commission']['contractor'] = {
                 'company_name': sections[2],
@@ -47,7 +48,8 @@ def jsonify_bill(bill):
         elif i == 2:
             # Adds data about the client.
             if not info['commission']:
-                logging.warning('No commission data available to add client and contractor')
+                logging.warning(
+                    'No commission data available to add client and contractor')
                 exit()
             info['commission']['client'] = {
                 'company_name': sections[2],
