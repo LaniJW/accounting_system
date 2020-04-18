@@ -5,6 +5,7 @@ from absl import app
 
 import ftp.connection_manager
 import parse.json
+import parse.txt
 import parse.xml
 import util.bill_format
 import util.config
@@ -45,6 +46,7 @@ def use_bill(bill, filename):
     if format_intact:
         json_bill = parse.json.jsonify_bill(bill)
         xml_bill = parse.xml.xmlify_bill(json_bill, config)
+        txt_bill = parse.txt.txtify_bill(json_bill)
         print(xml_bill)
     else:
         logging.warning(
