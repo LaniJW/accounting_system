@@ -75,7 +75,7 @@ def jsonify_bill(bill):
                 elif j == 5:
                     item['price_total'] = section
                 elif j == 6:
-                    item['tax'] = section
+                    item['tax'] = section.split('_')[1]
             info['items'].append(item)
     return info
 
