@@ -34,7 +34,8 @@ def fetch_bills(files, cs):
     for filename in files:
         file_ending = filename.split('.')[len(filename.split('.')) - 1]
         if filename != '.' and filename != '..' and file_ending == 'data':
-            cs.retrbinary(f'RETR {filename}', lambda bill: use_bill(bill, filename))
+            cs.retrbinary(f'RETR {filename}',
+                          lambda bill: use_bill(bill, filename))
 
 
 def use_bill(bill, filename):
