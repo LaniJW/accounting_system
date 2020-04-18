@@ -1,4 +1,3 @@
-import datetime
 import xml.etree.cElementTree as et
 
 import parse.util
@@ -28,8 +27,8 @@ def add_invoice_header(root, json_bill):
     et.SubElement(basedata, 'BV.010_Rechnungsnummer').text = \
         json_bill['commission']['number']
     et.SubElement(basedata, 'BV.020_Rechnungsdatum').text = str(
-        get_date_time_from_json(json_bill['commission']['date'],
-                                json_bill['commission']['time']))
+        parse.util.get_date_time_from_json(json_bill['commission']['date'],
+                                           json_bill['commission']['time']))
     et.SubElement(basedata, 'BV.030_Funktion_des_Dokuments').text = 'Original'
     et.SubElement(basedata, 'BV.040_Typ_des_Dokuments').text = 'Rechnung'
     et.SubElement(basedata,
@@ -95,7 +94,7 @@ def add_invoice_header(root, json_bill):
     et.SubElement(payment_conditions,
                   'BV.020_Zahlungsbedingungen_Zusatzwert').text = str(
         parse.util.get_due_date(
-            get_date_time_from_json(
+            parse.util.get_date_time_from_json(
                 json_bill['commission']['date'],
                 json_bill['commission']['time']),
             json_bill['commission']['deadline_days']))
@@ -124,8 +123,8 @@ def add_invoice_detail(root, json_bill):
             'description']
         et.SubElement(basedata,
                       'BV.140_Abschlussdatum_der_Lieferung_Ausfuehrung').text = str(
-            get_date_time_from_json(json_bill['commission']['date'],
-                                    json_bill['commission']['time']))
+            parse.util.get_date_time_from_json(json_bill['commission']['date'],
+                                               json_bill['commission']['time']))
 
         price_and_amount = et.SubElement(invoice_items,
                                          'I.D.020_Preise_und_Mengen')
@@ -192,12 +191,3 @@ def add_invoice_summary(root, json_bill):
         parse.util.get_total_price(json_bill['items']))
     et.SubElement(tax_breakdown, 'BV.050_Steuerbetrag').text = '0.00'
     et.SubElement(tax_breakdown, 'BV.055_Waehrung_Steuerbetrag').text = 'CHF'
-
-
-def get_date_time_from_json(date_json, time_json):
-    return datetime.datetime(year=int(date_json['year']),
-                             month=int(date_json['month']),
-                             day=int(date_json['day']),
-                             hour=int(time_json['hour']),
-                             minute=int(time_json['minute']),
-                             second=int(time_json['second']))
