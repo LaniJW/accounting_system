@@ -4,6 +4,7 @@ import coloredlogs
 from absl import app
 
 import ftp.connection_manager
+import mail.post
 import parse.json
 import parse.txt
 import parse.xml
@@ -50,6 +51,7 @@ def use_bill(bill, filename):
         logging.info('Parsing to XML done.')
         txt_bill = parse.txt.txtify_bill(json_bill)
         logging.info('Parsing to txt done.')
+        mail.post.send_processing_mail(json_bill, txt_bill, xml_bill, config)
     else:
         logging.warning(
             f'File {filename} was not processed because of some format errors. Please see errors above to fix issue.')
