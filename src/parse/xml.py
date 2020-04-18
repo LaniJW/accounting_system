@@ -14,8 +14,6 @@ def xmlify_bill(json_bill, config):
     add_invoice_detail(root, json_bill)
     add_invoice_summary(root, json_bill)
 
-    # TODO(laniw): Add converters for invoice details and invoice summary.
-
     tree = et.ElementTree(root)
     tree.write('bill.xml')
     return et.tostring(root, 'utf8')
@@ -90,8 +88,7 @@ def add_invoice_detail(root, json_bill):
     for item in json_bill['items']:
         basedata = et.SubElement(invoice_items, 'I.D.010_Basisdaten')
         et.SubElement(basedata, 'BV.010_Positions_Nr_in_der_Rechnung').text = item['id']
-        # What is this data even supposed to be?
-        et.SubElement(basedata, 'BV.020_Artikel_Nr_des_Lieferanten').text = '?'
+        et.SubElement(basedata, 'BV.020_Artikel_Nr_des_Lieferanten').text = item['id']
         et.SubElement(basedata, 'BV.070_Artikel_Beschreibung').text = item['description']
         et.SubElement(basedata, 'BV.140_Abschlussdatum_der_Lieferung_Ausfuehrung').text = str(
             get_date_time_from_json(json_bill['commission']['date'], json_bill['commission']['time']))
@@ -99,7 +96,6 @@ def add_invoice_detail(root, json_bill):
         price_and_amount = et.SubElement(invoice_items, 'I.D.020_Preise_und_Mengen')
         et.SubElement(price_and_amount, 'BV.010_Verrechnete_Menge').text = item['amount']
         et.SubElement(price_and_amount, 'BV.020_Mengeneinheit_der_verrechneten_Menge').text = 'BLL'
-        # Why is this marked as total value of position if the name is not matching?
         et.SubElement(price_and_amount, 'BV.030_Verrechneter_Einzelpreis_des_Artikels').text = item['price_per_item']
         et.SubElement(price_and_amount, 'BV.040_Waehrung_des_Einzelpreises').text = 'CHF'
         et.SubElement(price_and_amount, 'BV.070_Bestaetigter_Gesamtpreis_der_Position_netto').text = item['price_total']
@@ -112,7 +108,6 @@ def add_invoice_detail(root, json_bill):
         et.SubElement(taxes, 'BV.020_Steuersatz_Kategorie').text = 'Standard Satz'
         et.SubElement(taxes, 'BV.030_Steuersatz').text = item['tax']
         et.SubElement(taxes, 'BV.040_Zu_versteuernder_Betrag').text = str(get_total_price(json_bill['items']))
-        # Can this just be 0.00 statically since the VAT is always 0%?
         et.SubElement(taxes, 'BV.050_Steuerbetrag').text = '0.00'
 
 
@@ -127,10 +122,8 @@ def add_invoice_summary(root, json_bill):
     et.SubElement(basedata, 'BV.040_Gesamtbetrag_der_Rechnung_exkl_MwSt_inkl_Ab_Zuschlag').text = str(
         get_total_price(json_bill['items']))
     et.SubElement(basedata, 'BV.050_Waehrung_Gesamtbetrag_der_Rechnung_exkl_MwSt_inkl_Ab_Zuschlag').text = 'CHF'
-    # Can this just be 0.00?
     et.SubElement(basedata, 'BV.060_Steuerbetrag').text = '0.00'
     et.SubElement(basedata, 'BV.070_Waehrung_des_Steuerbetrags').text = 'CHF'
-    # Can this just be the total value of the whole bill?
     et.SubElement(basedata, 'BV.080_Gesamtbetrag_der_Rechnung_inkl_MwSt_inkl_Ab_Zuschlag').text = str(
         get_total_price(json_bill['items']))
     et.SubElement(basedata, 'BV.090_Waehrung_Gesamtbetrag_der_Rechnung_inkl_MwSt_inkl_Ab_Zuschlag').text = 'CHF'
@@ -138,10 +131,8 @@ def add_invoice_summary(root, json_bill):
     tax_breakdown = et.SubElement(invoice_summary, 'I.S.020_Aufschluesselung_der_Steuern')
     et.SubElement(tax_breakdown, 'BV.010_Funktion_der_Steuer').text = 'Steuer'
     et.SubElement(tax_breakdown, 'BV.020_Steuersatz_Kategorie').text = 'Standard Satz'
-    # Can this just be the default value of VAT?
     et.SubElement(tax_breakdown, 'BV.030_Steuersatz').text = 'MWST_0.00%'
     et.SubElement(tax_breakdown, 'BV.040_Zu_versteuernder_Betrag').text = str(get_total_price(json_bill['items']))
-    # Can this just be 0.00?
     et.SubElement(tax_breakdown, 'BV.050_Steuerbetrag').text = '0.00'
     et.SubElement(tax_breakdown, 'BV.055_Waehrung_Steuerbetrag').text = 'CHF'
 
