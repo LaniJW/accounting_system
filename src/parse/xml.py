@@ -16,7 +16,6 @@ def xmlify_bill(json_bill, config):
     add_invoice_summary(root, json_bill)
 
     tree = et.ElementTree(root)
-    tree.write('bill.xml')
     return et.tostring(root, 'utf8')
 
 
