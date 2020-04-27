@@ -69,7 +69,7 @@ def get_date_from_filename(filename):
 
 def get_time_from_filename(filename):
     scrunched_time = filename[13:28].split('_')[1]
-    hour = scrunched_time[0:4]
-    minute = scrunched_time[4:6]
-    second = scrunched_time[6:]
+    hour = scrunched_time[0:2]
+    minute = scrunched_time[2:4]
+    second = scrunched_time[4:]
     return f'{hour}:{minute}:{second}'
