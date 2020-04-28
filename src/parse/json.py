@@ -28,6 +28,7 @@ def jsonify_bill(bill):
                 },
                 'deadline_days': sections[5].split('_')[1]
             }
+            logging.info('Added bill commission info to JSON.')
         elif i == 1:
             # Adds data about the contractor.
             if not info['commission']:
@@ -45,6 +46,7 @@ def jsonify_bill(bill):
                     'city': get_plz_city_dict(sections[5])
                 }
             }
+            logging.info('Added contractor info to JSON.')
         elif i == 2:
             # Adds data about the client.
             if not info['commission']:
@@ -59,6 +61,7 @@ def jsonify_bill(bill):
                     'city': get_plz_city_dict(sections[4])
                 }
             }
+            logging.info('Added client info to JSON.')
         else:
             if 'items' not in info:
                 info['items'] = []
@@ -77,6 +80,7 @@ def jsonify_bill(bill):
                 elif j == 6:
                     item['tax'] = section.split('_')[1]
             info['items'].append(item)
+            logging.info('Added item info to JSON.')
     return info
 
 
