@@ -32,7 +32,10 @@ done = False
 
 
 def main(_):
-    # TODO(laniw): Check if config has all required fields and values
+    if not util.config.check_fields(config):
+        exit()
+    else:
+        logging.info('Configuration intact. Proceeding.')
     # TODO(laniw): Remove any preexisting files on accounting server or customer in folder.
 
     cs = ftp.connection_manager.create_customer_server_session(config)
