@@ -162,8 +162,8 @@ def add_invoice_detail(root, json_bill):
         et.SubElement(taxes,
                       'BV.020_Steuersatz_Kategorie').text = 'Standard Satz'
         et.SubElement(taxes, 'BV.030_Steuersatz').text = item['tax']
-        et.SubElement(taxes, 'BV.040_Zu_versteuernder_Betrag').text = str(
-            parse.util.get_total_price(json_bill['items']))
+        et.SubElement(taxes, 'BV.040_Zu_versteuernder_Betrag').text = item[
+            'price_total']
         et.SubElement(taxes, 'BV.050_Steuerbetrag').text = '0.00'
         logging.debug('Added an invoice item\'s taxes to XML.')
         logging.info('Added an invoice item to XML.')
