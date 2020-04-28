@@ -40,9 +40,13 @@ def main(_):
     # Change to own billing directory
     cs.cwd(util.ftp_folders.get_out_folder(COMPANY_SUBDIR))
     # Fetch all bill files from directory and call use_bill callback
+    logging.info('Searching for bills.')
     bills = fetch_bills(cs.nlst(), cs)
 
+    if len(bills) < 1:
+        logging.info('No bills found.')
     for bill in bills:
+        logging.info('Working with bill "{}"'.format(bill['filename']))
         use_bill(bill['file'], bill['filename'])
 
     cs.close()
@@ -50,7 +54,6 @@ def main(_):
 
 def fetch_bills(files, cs):
     bills = []
-    logging.info('Searching for .data files.')
     for filename in files:
         file_ending = filename.split('.')[len(filename.split('.')) - 1]
         if filename != '.' and filename != '..' and file_ending == 'data':
