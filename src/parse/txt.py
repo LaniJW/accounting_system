@@ -1,3 +1,5 @@
+import logging
+
 import parse.util
 
 
@@ -10,12 +12,14 @@ def txtify_bill(json_bill):
         json_bill['commission']['contractor']['address']['city']['plz'],
         json_bill['commission']['contractor']['address']['city']['city'],
         json_bill['commission']['contractor']['company_id'])
+    logging.info('Added contractor name and address to TXT.')
 
     contractor_name_date = '{}, den {}.{}.{}'.format(
         json_bill['commission']['contractor']['address']['city']['city'],
         json_bill['commission']['date']['day'],
         json_bill['commission']['date']['month'],
         json_bill['commission']['date']['year'])
+    logging.info('Added contractor name and date to TXT.')
 
     client_address = '{}{}\n{}{} {}\n{}{} {}'.format(
         get_multiple_chars('\t', 12),
@@ -26,10 +30,12 @@ def txtify_bill(json_bill):
         get_multiple_chars('\t', 12),
         json_bill['commission']['client']['address']['city']['plz'],
         json_bill['commission']['client']['address']['city']['city'])
+    logging.info('Added client address to TXT.')
 
     pre_item_details = 'Kundennummer:\t{}\nAuftragsnummer:\t{}'.format(
         json_bill['commission']['contractor']['client_id'],
         json_bill['commission']['number'])
+    logging.info('Added pre-item details to TXT.')
 
     bill_detail_header = 'Rechnung Nr{}{}'.format(get_multiple_chars('\t', 3),
                                                   json_bill['bill_nr'])
@@ -52,6 +58,7 @@ def txtify_bill(json_bill):
     bill_vat = '{}MWST CHF{}{}'.format(get_multiple_chars('\t', 11),
                                        get_multiple_chars('\t', 2),
                                        '0.00')
+    logging.info('Added bill items to TXT.')
 
     due_date = 'Zahlungsziel ohne Abzug {} Tage ({})'.format(
         json_bill['commission']['deadline_days'], str(
@@ -61,6 +68,7 @@ def txtify_bill(json_bill):
                     json_bill['commission']['time']),
                 json_bill['commission']['deadline_days'])))
     payment_slip = 'Einzahlungsschein'
+    logging.info('Added due date to TXT.')
 
     pre_second_client_addr_total = '\t{}{}{}'.format(parse.util.get_total_price(
         json_bill['items']), get_multiple_chars('\t', 5),
@@ -68,6 +76,7 @@ def txtify_bill(json_bill):
             json_bill['items']))
     some_digits = '0 00000 00000 00000'
     third_address = client_address.replace('\t', '')
+    logging.info('Added addresses to TXT.')
 
     return '{}\n\n\n\n\n{}\n{}\n{}\n\n{}\n{}\n{}\n{}\n{}\n\n{}\n\n\n\n\n\n\n\n\n\n{}\n\n{}\n\n\n\n\n\n\n\n\n\n{}\n{}\n{}\n\n{}'.format(
         contractor_name_address, contractor_name_date, client_address,
