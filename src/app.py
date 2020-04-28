@@ -73,6 +73,7 @@ def use_bill(bill, filename):
 
     format_intact = util.bill_format.check_bill_format(bill)
     if format_intact:
+        logging.info(f'Invoice format check passed. Moving on with processing.')
         json_bill = parse.json.jsonify_bill(bill)
         logging.info('Parsing to JSON done.')
         xml_bill = parse.xml.xmlify_bill(json_bill, config)

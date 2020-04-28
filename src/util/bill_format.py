@@ -36,7 +36,6 @@ def check_bill_format(bill):
     check_passed = check_passed if check_invoice_item_lines_format(
         lines[INVOICE_ITEMS_STARTING_INDEX:], check_passed) else False
 
-    logging.info(f'Invoice format check passed: {check_passed}')
     return check_passed
 
 
