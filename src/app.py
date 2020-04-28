@@ -82,13 +82,14 @@ def use_bill(bill, filename):
         file_uploaded = False
         working = True
         while working:
-            logging.info(
-                f'Waiting for {RECEIPT_QUERY_DELAY} seconds to query receipt.')
-            time.sleep(RECEIPT_QUERY_DELAY)
             if not file_uploaded:
                 upload_bills(xml_bill, txt_bill)
                 logging.info('Uploaded bills.')
                 file_uploaded = True
+
+            logging.info(
+                f'Waiting for {RECEIPT_QUERY_DELAY} seconds to query receipt.')
+            time.sleep(RECEIPT_QUERY_DELAY)
 
             if file_uploaded:
                 logging.info('Checking for generated receipt.')
