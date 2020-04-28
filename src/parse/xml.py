@@ -1,3 +1,4 @@
+import logging
 import xml.etree.cElementTree as et
 
 import parse.util
@@ -12,10 +13,12 @@ def xmlify_bill(json_bill, config):
     CONFIG = config
 
     add_invoice_header(root, json_bill)
+    logging.info('Added invoice header to XML.')
     add_invoice_detail(root, json_bill)
+    logging.info('Added invoice detail to XML.')
     add_invoice_summary(root, json_bill)
+    logging.info('Added invoice summary to XML.')
 
-    tree = et.ElementTree(root)
     return et.tostring(root, 'utf8')
 
 
@@ -35,6 +38,7 @@ def add_invoice_header(root, json_bill):
     et.SubElement(basedata, 'BV.060_Bestellnummer_des_Kaeufers')
     et.SubElement(basedata, 'BV.080_Waehrung').text = 'CHF'
     et.SubElement(basedata, 'BV.090_Sprache').text = 'de'
+    logging.info('Added invoice header base data to XML.')
 
     client_identification = et.SubElement(invoice_header,
                                           'I.H.020_Einkaeufer_Identifikation')
@@ -58,6 +62,7 @@ def add_invoice_header(root, json_bill):
         json_bill['commission']['client']['address']['city'][
             'city']
     et.SubElement(client_identification, 'BV.120_Land').text = 'CH'
+    logging.info('Added invoice header client identification to XML.')
 
     contractor_identification = et.SubElement(invoice_header,
                                               'I.H.030_Lieferanten_Identifikation')
@@ -76,6 +81,7 @@ def add_invoice_header(root, json_bill):
     et.SubElement(contractor_identification, 'BV.110_Stadt').text = \
         json_bill['commission']['contractor']['address']['city']['city']
     et.SubElement(contractor_identification, 'BV.120_Land').text = 'CH'
+    logging.info('Added invoice header contractor identification to XML.')
 
     billing_address = et.SubElement(invoice_header, 'I.H.040_Rechnungsadresse')
     et.SubElement(billing_address, 'BV.040_Name1').text = \
@@ -85,6 +91,7 @@ def add_invoice_header(root, json_bill):
     et.SubElement(billing_address, 'BV.110_Stadt').text = \
         json_bill['commission']['client']['address']['city']['city']
     et.SubElement(billing_address, 'BV.120_Land').text = 'CH'
+    logging.info('Added invoice header billing address to XML.')
 
     payment_conditions = et.SubElement(invoice_header,
                                        'I.H.080_Zahlungsbedingungen')
@@ -97,6 +104,7 @@ def add_invoice_header(root, json_bill):
                 json_bill['commission']['date'],
                 json_bill['commission']['time']),
             json_bill['commission']['deadline_days']))
+    logging.info('Added invoice header payment conditions to XML.')
 
     vat_information = et.SubElement(invoice_header,
                                     'I.H.140_MwSt._Informationen')
@@ -106,6 +114,7 @@ def add_invoice_header(root, json_bill):
     et.SubElement(vat_information, 'BV.020_MwSt_Nummer_des_Lieferanten').text = \
         json_bill['commission']['contractor'][
             'company_id']
+    logging.info('Added invoice header vat info to XML.')
 
 
 def add_invoice_detail(root, json_bill):
@@ -124,6 +133,7 @@ def add_invoice_detail(root, json_bill):
                       'BV.140_Abschlussdatum_der_Lieferung_Ausfuehrung').text = str(
             parse.util.get_date_time_from_json(json_bill['commission']['date'],
                                                json_bill['commission']['time']))
+        logging.debug('Added an invoice item\'s basedata to XML.')
 
         price_and_amount = et.SubElement(invoice_items,
                                          'I.D.020_Preise_und_Mengen')
@@ -145,6 +155,7 @@ def add_invoice_detail(root, json_bill):
                 'price_total']
         et.SubElement(price_and_amount,
                       'BV.090_Waehrung_des_Gesamtpreises').text = 'CHF'
+        logging.debug('Added an invoice item\'s price and amount to XML.')
 
         taxes = et.SubElement(invoice_items, 'I.D.030_Steuern')
         et.SubElement(taxes, 'BV.010_Funktion_der_Steuer').text = 'Steuer'
@@ -154,6 +165,8 @@ def add_invoice_detail(root, json_bill):
         et.SubElement(taxes, 'BV.040_Zu_versteuernder_Betrag').text = str(
             parse.util.get_total_price(json_bill['items']))
         et.SubElement(taxes, 'BV.050_Steuerbetrag').text = '0.00'
+        logging.debug('Added an invoice item\'s taxes to XML.')
+        logging.info('Added an invoice item to XML.')
 
 
 def add_invoice_summary(root, json_bill):
@@ -179,6 +192,7 @@ def add_invoice_summary(root, json_bill):
         parse.util.get_total_price(json_bill['items']))
     et.SubElement(basedata,
                   'BV.090_Waehrung_Gesamtbetrag_der_Rechnung_inkl_MwSt_inkl_Ab_Zuschlag').text = 'CHF'
+    logging.info('Added invoice summary base data to XML.')
 
     tax_breakdown = et.SubElement(invoice_summary,
                                   'I.S.020_Aufschluesselung_der_Steuern')
@@ -190,3 +204,4 @@ def add_invoice_summary(root, json_bill):
         parse.util.get_total_price(json_bill['items']))
     et.SubElement(tax_breakdown, 'BV.050_Steuerbetrag').text = '0.00'
     et.SubElement(tax_breakdown, 'BV.055_Waehrung_Steuerbetrag').text = 'CHF'
+    logging.info('Added invoice summary tax breakdown to XML.')
