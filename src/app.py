@@ -27,8 +27,6 @@ coloredlogs.install()
 COMPANY_SUBDIR = 'AP17bWagner'
 RECEIPT_QUERY_DELAY = 20
 
-file_uploaded = False
-
 
 def main(_):
     if not util.config.check_fields(config):
@@ -69,8 +67,6 @@ def fetch_bills(files, cs):
 
 
 def use_bill(bill, filename):
-    global file_uploaded
-
     bill = bill.decode('utf-8').replace('\r\n', '\n')
 
     format_intact = util.bill_format.check_bill_format(bill)
@@ -83,6 +79,7 @@ def use_bill(bill, filename):
         txt_bill = parse.txt.txtify_bill(json_bill)
         logging.info('Parsing to txt done.')
 
+        file_uploaded = False
         working = True
         while working:
             logging.info(
@@ -125,8 +122,6 @@ def upload_bills(xml_bill, txt_bill):
 
 
 def query_receipt():
-    global file_uploaded
-
     ps = ftp.connection_manager.create_accounting_server_session(config)
     ps.cwd(util.ftp_folders.get_out_folder(COMPANY_SUBDIR))
 
@@ -140,8 +135,6 @@ def query_receipt():
 
 
 def use_receipt(json_bill, receipt, txt_bill, gen_filename):
-    global file_uploaded
-
     filenames = generate_temporary_final_filenames(json_bill)
     receipt_filename = gen_filename
     bill_filename = filenames['bill']
@@ -149,10 +142,8 @@ def use_receipt(json_bill, receipt, txt_bill, gen_filename):
 
     with open(receipt_filename, 'wb') as f:
         f.write(receipt)
-    logging.info(f'Wrote temporary receipt file "{receipt_filename}".')
     with open(bill_filename, 'w') as f:
         f.write(txt_bill)
-    logging.info(f'Wrote temporary bill file "{bill_filename}".')
 
     zip_obj = ZipFile(zip_filename, 'w')
     zip_obj.write(bill_filename)
@@ -163,24 +154,22 @@ def use_receipt(json_bill, receipt, txt_bill, gen_filename):
     # Upload zip to customer FTP server.
     cs = ftp.connection_manager.create_customer_server_session(config)
     cs.cwd(util.ftp_folders.get_in_folder(COMPANY_SUBDIR))
-    temp_file_object = open(zip_filename, 'rb')
-    cs.storbinary(f'STOR {zip_filename}', temp_file_object)
+    with open(zip_filename, 'rb') as f:
+        cs.storbinary(f'STOR {zip_filename}', f)
     cs.close()
     logging.info('ZIP file uploaded to customer server.')
     # Send zip per email
-    mail.post.send_processing_mail(json_bill, zip_filename,
-                                   open(zip_filename, 'rb').read(),
-                                   gen_filename,
-                                   config)
+    with open(zip_filename, 'rb') as f:
+        mail.post.send_processing_mail(json_bill, zip_filename, f.read(),
+                                       gen_filename, config)
     logging.info('Email sent.')
 
     os.remove(receipt_filename)
     os.remove(bill_filename)
-    # TODO(laniw): Fix this: os.remove(zip_filename)
+    os.remove(zip_filename)
     logging.info(f'Removed temporary files.')
 
-    logging.info('Done processing bills.')
-    # Delete old files on payment processing server
+    # Delete old files from accounting server
     ps = ftp.connection_manager.create_accounting_server_session(config)
     ps.cwd(util.ftp_folders.get_in_folder(COMPANY_SUBDIR))
     for file in ps.nlst():
@@ -193,9 +182,7 @@ def use_receipt(json_bill, receipt, txt_bill, gen_filename):
         if file.startswith('quittungsfile') and file.endswith('.txt'):
             ps.delete(file)
     ps.close()
-
-    # Reset flow controlling booleans
-    file_uploaded = False
+    logging.info('Removed processing files from accounting server.')
 
 
 def generate_temporary_final_filenames(json_bill):
