@@ -91,7 +91,10 @@ def use_bill(bill, filename):
 
             if file_uploaded:
                 logging.info('Checking for generated receipt.')
-                query_receipt(json_bill, txt_bill)
+                receipt = query_receipt()
+                if receipt:
+                    use_receipt(json_bill, receipt['file'], txt_bill,
+                                receipt['filename'])
 
             if not done:
                 logging.info(
@@ -125,7 +128,7 @@ def upload_bills(xml_bill, txt_bill):
     ps.close()
 
 
-def query_receipt(json_bill, txt_bill):
+def query_receipt():
     global file_uploaded
 
     ps = ftp.connection_manager.create_accounting_server_session(config)
@@ -136,9 +139,8 @@ def query_receipt(json_bill, txt_bill):
             logging.info(f'Receipt file {filename} found.')
             with io.BytesIO() as buffer_io:
                 ps.retrbinary(f'RETR {filename}', buffer_io.write)
-                receipt = buffer_io.getvalue()
-            use_receipt(json_bill, receipt, txt_bill, filename)
-            break
+                ps.close()
+                return {'file': buffer_io.getvalue(), 'filename': filename}
 
 
 def use_receipt(json_bill, receipt, txt_bill, gen_filename):
