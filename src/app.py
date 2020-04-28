@@ -27,7 +27,6 @@ coloredlogs.install()
 COMPANY_SUBDIR = 'AP17bWagner'
 RECEIPT_QUERY_DELAY = 20
 
-accounting_server_blocked = False
 file_uploaded = False
 done = False
 
@@ -65,7 +64,6 @@ def fetch_bills(files, cs):
 
 
 def use_bill(bill, filename):
-    global accounting_server_blocked
     global file_uploaded
 
     bill = bill.decode('utf-8').replace('\r\n', '\n')
@@ -79,10 +77,9 @@ def use_bill(bill, filename):
         txt_bill = parse.txt.txtify_bill(json_bill)
         logging.info('Parsing to txt done.')
         while True:
-            if not accounting_server_blocked and not file_uploaded:
+            if not file_uploaded:
                 upload_bills(xml_bill, txt_bill)
                 logging.info('Uploaded bills.')
-                accounting_server_blocked = True
                 file_uploaded = True
 
             if file_uploaded:
@@ -122,7 +119,6 @@ def upload_bills(xml_bill, txt_bill):
 
 
 def query_receipt(json_bill, txt_bill):
-    global accounting_server_blocked
     global file_uploaded
 
     ps = ftp.connection_manager.create_accounting_server_session(config)
@@ -139,7 +135,6 @@ def query_receipt(json_bill, txt_bill):
 
 
 def use_receipt(json_bill, receipt, txt_bill, gen_filename):
-    global accounting_server_blocked
     global file_uploaded
     global done
 
@@ -198,7 +193,6 @@ def use_receipt(json_bill, receipt, txt_bill, gen_filename):
     ps.close()
 
     # Reset flow controlling booleans
-    accounting_server_blocked = False
     file_uploaded = False
     done = True
 
