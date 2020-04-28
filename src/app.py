@@ -132,6 +132,7 @@ def query_receipt():
                 ps.retrbinary(f'RETR {filename}', buffer_io.write)
                 ps.close()
                 return buffer_io.getvalue(), filename
+    return None, None
 
 
 def use_receipt(json_bill, receipt, txt_bill, gen_filename):
