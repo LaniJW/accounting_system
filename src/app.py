@@ -41,19 +41,27 @@ def main(_):
     # Change to own billing directory
     cs.cwd(util.ftp_folders.get_out_folder(COMPANY_SUBDIR))
     # Fetch all bill files from directory and call use_bill callback
-    fetch_bills(cs.nlst(), cs)
+    bills = fetch_bills(cs.nlst(), cs)
+
+    for bill in bills:
+        use_bill(bill['file'], bill['filename'])
+
+    cs.close()
 
 
 def fetch_bills(files, cs):
+    bills = []
     logging.info('Searching for .data files.')
     for filename in files:
         file_ending = filename.split('.')[len(filename.split('.')) - 1]
         if filename != '.' and filename != '..' and file_ending == 'data':
             logging.info(f'Found data file {filename}.')
-            cs.retrbinary(f'RETR {filename}',
-                          lambda bill: use_bill(bill, filename))
-            cs.delete(filename)
-    cs.close()
+            with io.BytesIO() as buffer_io:
+                cs.retrbinary(f'RETR {filename}', buffer_io.write)
+                bills.append(
+                    {'file': buffer_io.getvalue(), 'filename': filename})
+                cs.delete(filename)
+    return bills
 
 
 def use_bill(bill, filename):
@@ -123,7 +131,6 @@ def query_receipt(json_bill, txt_bill):
     for filename in ps.nlst():
         if filename.startswith('quittungsfile') and filename.endswith('.txt'):
             logging.info(f'Receipt file {filename} found.')
-            # TODO(laniw): Fix triple call of use_receipt.
             with io.BytesIO() as buffer_io:
                 ps.retrbinary(f'RETR {filename}', buffer_io.write)
                 receipt = buffer_io.getvalue()
