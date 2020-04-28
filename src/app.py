@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 import time
@@ -24,7 +25,7 @@ logging.basicConfig(filename='app.log', level=logging.DEBUG,
 coloredlogs.install()
 
 COMPANY_SUBDIR = 'AP17bWagner'
-RECEIPT_QUERY_DELAY = 60
+RECEIPT_QUERY_DELAY = 20
 
 accounting_server_blocked = False
 file_uploaded = False
@@ -33,6 +34,7 @@ done = False
 
 def main(_):
     # TODO(laniw): Check if config has all required fields and values
+    # TODO(laniw): Remove any preexisting files on accounting server or customer in folder.
 
     cs = ftp.connection_manager.create_customer_server_session(config)
 
@@ -85,7 +87,7 @@ def use_bill(bill, filename):
                 time.sleep(RECEIPT_QUERY_DELAY)
             else:
                 logging.info(
-                    'Receipt file and processing underway or done. Exiting query loop.')
+                    'Receipt file processing done. Exiting query loop.')
                 break
     else:
         logging.warning(
@@ -116,16 +118,16 @@ def query_receipt(json_bill, txt_bill):
     global file_uploaded
 
     ps = ftp.connection_manager.create_accounting_server_session(config)
-    ps.cwd('out/AP17bWagner/')
+    ps.cwd(util.ftp_folders.get_out_folder(COMPANY_SUBDIR))
 
     for filename in ps.nlst():
         if filename.startswith('quittungsfile') and filename.endswith('.txt'):
             logging.info(f'Receipt file {filename} found.')
             # TODO(laniw): Fix triple call of use_receipt.
-            ps.retrbinary(f'RETR {filename}',
-                          lambda receipt: use_receipt(json_bill, receipt,
-                                                      txt_bill, filename))
-            print(filename)
+            with io.BytesIO() as buffer_io:
+                ps.retrbinary(f'RETR {filename}', buffer_io.write)
+                receipt = buffer_io.getvalue()
+            use_receipt(json_bill, receipt, txt_bill, filename)
             break
 
 
@@ -160,10 +162,11 @@ def use_receipt(json_bill, receipt, txt_bill, gen_filename):
     temp_file_object = open(zip_filename, 'rb')
     cs.storbinary(f'STOR {zip_filename}', temp_file_object)
     cs.close()
-    logging.info('ZIP file uploaded.')
+    logging.info('ZIP file uploaded to customer server.')
     # Send zip per email
     mail.post.send_processing_mail(json_bill, zip_filename,
-                                   open(zip_filename, 'rb').read(), gen_filename,
+                                   open(zip_filename, 'rb').read(),
+                                   gen_filename,
                                    config)
     logging.info('Email sent.')
 
