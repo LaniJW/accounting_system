@@ -2,7 +2,6 @@ import io
 import logging
 import os
 import time
-import uuid
 from zipfile import ZipFile
 
 import coloredlogs
@@ -83,7 +82,7 @@ def use_bill(bill, filename):
         working = True
         while working:
             if not file_uploaded:
-                upload_bills(xml_bill, txt_bill)
+                upload_bills(json_bill, xml_bill, txt_bill)
                 logging.info('Uploaded bills.')
                 file_uploaded = True
 
@@ -102,21 +101,18 @@ def use_bill(bill, filename):
             f'File {filename} was not processed because of some format errors. Please see errors above to fix issue.')
 
 
-def upload_bills(xml_bill, txt_bill):
+def upload_bills(json_bill, xml_bill, txt_bill):
+    client_id = json_bill['commission']['contractor']['client_id']
+    bill_nr = json_bill['bill_nr']
+
     ps = ftp.connection_manager.create_accounting_server_session(config)
     ps.cwd(util.ftp_folders.get_in_folder(COMPANY_SUBDIR))
 
-    temp_filename = 'temp_{}'.format(uuid.uuid1())
-    with open(temp_filename, 'wb') as f:
-        f.write(xml_bill)
-    with open(temp_filename, 'rb') as f:
-        ps.storbinary('STOR invoice.xml', f)
-    with open(temp_filename, 'w') as f:
-        f.write(txt_bill)
-    with open(temp_filename, 'rb') as f:
-        ps.storbinary('STOR invoice.txt', f)
+    xml_bill_file = io.BytesIO(xml_bill.encode())
+    ps.storbinary(f'STOR {client_id}_{bill_nr}_invoice.xml', xml_bill_file)
 
-    os.remove(temp_filename)
+    txt_bill_file = io.BytesIO(txt_bill.encode())
+    ps.storbinary(f'STOR {client_id}_{bill_nr}_invoice.txt', txt_bill_file)
 
     ps.close()
 
@@ -132,6 +128,7 @@ def query_receipt():
                 ps.retrbinary(f'RETR {filename}', buffer_io.write)
                 ps.close()
                 return buffer_io.getvalue(), filename
+    return None, None
 
 
 def use_receipt(json_bill, receipt, txt_bill, gen_filename):
@@ -143,10 +140,10 @@ def use_receipt(json_bill, receipt, txt_bill, gen_filename):
     with open(bill_filename, 'w') as f:
         f.write(txt_bill)
 
-    zip_obj = ZipFile(zip_filename, 'w')
-    zip_obj.write(bill_filename)
-    zip_obj.write(receipt_filename)
-    zip_obj.close()
+    with ZipFile(zip_filename, 'w') as zip:
+        zip.write(bill_filename)
+        zip.write(receipt_filename)
+        zip.close()
     logging.info(f'Wrote temporary zip file "{zip_filename}".')
 
     # Upload zip to customer FTP server.
@@ -174,7 +171,6 @@ def use_receipt(json_bill, receipt, txt_bill, gen_filename):
 def generate_temporary_final_filenames(json_bill):
     client_id = json_bill['commission']['contractor']['client_id']
     bill_nr = json_bill['bill_nr']
-    # TODO(laniw): What name are the files supposed to have?
     return f'{client_id}_{bill_nr}_invoice.txt', f'{client_id}_{bill_nr}.zip'
 
 
