@@ -19,15 +19,15 @@ def xmlify_bill(json_bill, config):
     add_invoice_summary(root, json_bill)
     logging.info('Added invoice summary to XML.')
 
-    return et.tostring(root, 'utf8')
+    return et.tostring(root, 'utf8').decode('utf-8').replace('\r\n', '\n')
 
 
 def add_invoice_header(root, json_bill):
     invoice_header = et.SubElement(root, 'Invoice_Header')
 
     basedata = et.SubElement(invoice_header, 'I.H.010_Basisdaten')
-    et.SubElement(basedata, 'BV.010_Rechnungsnummer').text = \
-        json_bill['commission']['number']
+    et.SubElement(basedata, 'BV.010_Rechnungsnummer').text = json_bill[
+        'bill_nr']
     et.SubElement(basedata, 'BV.020_Rechnungsdatum').text = str(
         parse.util.get_date_time_from_json(json_bill['commission']['date'],
                                            json_bill['commission']['time']))
