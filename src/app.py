@@ -111,14 +111,14 @@ def upload_bills(xml_bill, txt_bill):
     ps.cwd(util.ftp_folders.get_in_folder(COMPANY_SUBDIR))
 
     temp_filename = 'temp_{}'.format(uuid.uuid1())
-
-    temp_file_object = get_file_object(xml_bill, temp_filename, 'wb')
-    ps.storbinary('STOR invoice.xml', temp_file_object)
-    temp_file_object.close()
-
-    temp_file_object = get_file_object(txt_bill, temp_filename, 'w')
-    ps.storbinary('STOR invoice.txt', temp_file_object)
-    temp_file_object.close()
+    with open(temp_filename, 'wb') as f:
+        f.write(xml_bill)
+    with open(temp_filename, 'rb') as f:
+        ps.storbinary('STOR invoice.xml', f)
+    with open(temp_filename, 'w') as f:
+        f.write(txt_bill)
+    with open(temp_filename, 'rb') as f:
+        ps.storbinary('STOR invoice.txt', f)
 
     os.remove(temp_filename)
 
@@ -202,13 +202,6 @@ def use_receipt(json_bill, receipt, txt_bill, gen_filename):
     # Reset flow controlling booleans
     file_uploaded = False
     done = True
-
-
-def get_file_object(content, filename, writemode):
-    with open(filename, writemode) as f:
-        f.write(content)
-
-    return open(filename, 'rb')
 
 
 if __name__ == '__main__':
