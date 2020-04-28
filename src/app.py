@@ -33,7 +33,7 @@ def main(_):
         exit()
     else:
         logging.info('Configuration intact. Proceeding.')
-    # TODO(laniw): Remove any preexisting files on accounting server or customer in folder.
+    remove_accounting_server_files()
 
     cs = ftp.connection_manager.create_customer_server_session(config)
 
@@ -168,6 +168,19 @@ def use_receipt(json_bill, receipt, txt_bill, gen_filename):
     logging.info(f'Removed temporary files.')
 
     # Delete old files from accounting server
+    remove_accounting_server_files()
+
+
+def generate_temporary_final_filenames(json_bill):
+    client_id = json_bill['commission']['contractor']['client_id']
+    bill_nr = json_bill['bill_nr']
+    # TODO(laniw): What name are the files supposed to have?
+    return f'{client_id}_{bill_nr}_invoice.txt', f'{client_id}_{bill_nr}.zip'
+
+
+def remove_accounting_server_files():
+    logging.info(
+        'Removed any old/new files from accounting server for clean state.')
     ps = ftp.connection_manager.create_accounting_server_session(config)
     ps.cwd(util.ftp_folders.get_in_folder(COMPANY_SUBDIR))
     for file in ps.nlst():
@@ -180,14 +193,6 @@ def use_receipt(json_bill, receipt, txt_bill, gen_filename):
         if file.startswith('quittungsfile') and file.endswith('.txt'):
             ps.delete(file)
     ps.close()
-    logging.info('Removed processing files from accounting server.')
-
-
-def generate_temporary_final_filenames(json_bill):
-    client_id = json_bill['commission']['contractor']['client_id']
-    bill_nr = json_bill['bill_nr']
-    # TODO(laniw): What name are the files supposed to have?
-    return f'{client_id}_{bill_nr}_invoice.txt', f'{client_id}_{bill_nr}.zip'
 
 
 if __name__ == '__main__':
