@@ -93,10 +93,9 @@ def use_bill(bill, filename):
 
             if file_uploaded:
                 logging.info('Checking for generated receipt.')
-                receipt = query_receipt()
+                receipt, receipt_filename = query_receipt()
                 if receipt:
-                    use_receipt(json_bill, receipt['file'], txt_bill,
-                                receipt['filename'])
+                    use_receipt(json_bill, receipt, txt_bill, receipt_filename)
                     working = False
     else:
         logging.warning(
@@ -132,14 +131,12 @@ def query_receipt():
             with io.BytesIO() as buffer_io:
                 ps.retrbinary(f'RETR {filename}', buffer_io.write)
                 ps.close()
-                return {'file': buffer_io.getvalue(), 'filename': filename}
+                return buffer_io.getvalue(), filename
 
 
 def use_receipt(json_bill, receipt, txt_bill, gen_filename):
-    filenames = generate_temporary_final_filenames(json_bill)
     receipt_filename = gen_filename
-    bill_filename = filenames['bill']
-    zip_filename = filenames['zip']
+    bill_filename, zip_filename = generate_temporary_final_filenames(json_bill)
 
     with open(receipt_filename, 'wb') as f:
         f.write(receipt)
@@ -190,10 +187,7 @@ def generate_temporary_final_filenames(json_bill):
     client_id = json_bill['commission']['contractor']['client_id']
     bill_nr = json_bill['bill_nr']
     # TODO(laniw): What name are the files supposed to have?
-    return {
-        'bill': f'{client_id}_{bill_nr}_invoice.txt',
-        'zip': f'{client_id}_{bill_nr}.zip'
-    }
+    return f'{client_id}_{bill_nr}_invoice.txt', f'{client_id}_{bill_nr}.zip'
 
 
 if __name__ == '__main__':
