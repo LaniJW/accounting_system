@@ -28,7 +28,6 @@ COMPANY_SUBDIR = 'AP17bWagner'
 RECEIPT_QUERY_DELAY = 20
 
 file_uploaded = False
-done = False
 
 
 def main(_):
@@ -83,7 +82,12 @@ def use_bill(bill, filename):
         logging.info('Parsing to XML done.')
         txt_bill = parse.txt.txtify_bill(json_bill)
         logging.info('Parsing to txt done.')
-        while True:
+
+        working = True
+        while working:
+            logging.info(
+                f'Waiting for {RECEIPT_QUERY_DELAY} seconds to query receipt.')
+            time.sleep(RECEIPT_QUERY_DELAY)
             if not file_uploaded:
                 upload_bills(xml_bill, txt_bill)
                 logging.info('Uploaded bills.')
@@ -95,15 +99,7 @@ def use_bill(bill, filename):
                 if receipt:
                     use_receipt(json_bill, receipt['file'], txt_bill,
                                 receipt['filename'])
-
-            if not done:
-                logging.info(
-                    f'Waiting for {RECEIPT_QUERY_DELAY} seconds to requery receipt.')
-                time.sleep(RECEIPT_QUERY_DELAY)
-            else:
-                logging.info(
-                    'Receipt file processing done. Exiting query loop.')
-                break
+                    working = False
     else:
         logging.warning(
             f'File {filename} was not processed because of some format errors. Please see errors above to fix issue.')
@@ -145,14 +141,11 @@ def query_receipt():
 
 def use_receipt(json_bill, receipt, txt_bill, gen_filename):
     global file_uploaded
-    global done
 
-    client_id = json_bill['commission']['contractor']['client_id']
-    bill_nr = json_bill['bill_nr']
-    # TODO(laniw): What name are the files supposed to have?
-    receipt_filename = f'quittung{client_id}_{bill_nr}.txt'
-    bill_filename = f'invoice{client_id}_{bill_nr}.txt'
-    zip_filename = f'{client_id}_{bill_nr}.zip'
+    filenames = generate_temporary_final_filenames(json_bill)
+    receipt_filename = gen_filename
+    bill_filename = filenames['bill']
+    zip_filename = filenames['zip']
 
     with open(receipt_filename, 'wb') as f:
         f.write(receipt)
@@ -203,7 +196,16 @@ def use_receipt(json_bill, receipt, txt_bill, gen_filename):
 
     # Reset flow controlling booleans
     file_uploaded = False
-    done = True
+
+
+def generate_temporary_final_filenames(json_bill):
+    client_id = json_bill['commission']['contractor']['client_id']
+    bill_nr = json_bill['bill_nr']
+    # TODO(laniw): What name are the files supposed to have?
+    return {
+        'bill': f'{client_id}_{bill_nr}_invoice.txt',
+        'zip': f'{client_id}_{bill_nr}.zip'
+    }
 
 
 if __name__ == '__main__':
