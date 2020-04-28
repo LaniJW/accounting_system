@@ -23,8 +23,10 @@ def check_bill_format(bill):
     lines.remove('')
     check_passed = True
 
-    check_passed = check_passed if check_line_count(lines, check_passed) else False
-    check_passed = check_passed if check_item_in_lines_count(lines, check_passed) else False
+    check_passed = check_passed if check_line_count(lines,
+                                                    check_passed) else False
+    check_passed = check_passed if check_item_in_lines_count(lines,
+                                                             check_passed) else False
     check_passed = check_passed if check_billing_line_format(
         lines[BILLING_LINE_INDEX], check_passed) else False
     check_passed = check_passed if check_contractor_line_format(
@@ -100,7 +102,8 @@ def check_billing_line_format(line, check_passed):
 
     row_id_p = r'Rechnung_\d+'
     if not re.match(row_id_p, row_id):
-        logging.warning(f'Billing row id ({row_id}) didn\'t match pattern "{row_id_p}".')
+        logging.warning(
+            f'Billing row id ({row_id}) didn\'t match pattern "{row_id_p}".')
         check_failed = True
 
     commission_number_p = r'Auftrag_\w+'
@@ -117,7 +120,8 @@ def check_billing_line_format(line, check_passed):
 
     billing_date_p = r'\d{2}\.\d{2}\.\d{4}'
     if not re.match(billing_date_p, billing_date):
-        logging.warning(f'Billing date ({billing_date}) didn\'t match pattern "{billing_date_p}".')
+        logging.warning(
+            f'Billing date ({billing_date}) didn\'t match pattern "{billing_date_p}".')
         check_failed = True
 
     billing_timestamp_p = r'\d{1,2}:\d{1,2}:\d{1,2}'
@@ -128,7 +132,8 @@ def check_billing_line_format(line, check_passed):
 
     deadline_p = r'ZahlungszielInTagen_\d+'
     if not re.match(deadline_p, deadline):
-        logging.warning(f'Deadline ({deadline}) didn\'t match pattern "{deadline_p}".')
+        logging.warning(
+            f'Deadline ({deadline}) didn\'t match pattern "{deadline_p}".')
         check_failed = True
 
     logging.info(f'Billing line check passed: {not check_failed}')
@@ -154,7 +159,8 @@ def check_contractor_line_format(line, check_passed):
 
     row_id_m = 'Herkunft'
     if row_id != row_id_m:
-        logging.info(f'Contractor row id ({row_id}) didn\'t match "{row_id_m}".')
+        logging.info(
+            f'Contractor row id ({row_id}) didn\'t match "{row_id_m}".')
         check_failed = True
 
     contractor_id_p = r'.+'
@@ -165,11 +171,13 @@ def check_contractor_line_format(line, check_passed):
 
     salutation_p = r'.+'
     if not re.match(salutation_p, salutation):
-        logging.warning(f'Contractor salutation ({salutation}) didn\'t match "{salutation_p}".')
+        logging.warning(
+            f'Contractor salutation ({salutation}) didn\'t match "{salutation_p}".')
         check_failed = True
 
     if not check_name_format(name):
-        logging.warning(f'Contractor name ({name}) didn\'t match "{NAME_PATTERN}".')
+        logging.warning(
+            f'Contractor name ({name}) didn\'t match "{NAME_PATTERN}".')
         check_failed = True
 
     if not check_street_and_number_format(street_and_number):
@@ -184,12 +192,14 @@ def check_contractor_line_format(line, check_passed):
 
     company_id_p = r'[A-Z]{3}-(?:\d{3}.){2}\d{3} MWST'
     if not re.match(company_id_p, company_id):
-        logging.warning(f'Contractor company id ({company_id}) didn\'t match "{company_id_p}".')
+        logging.warning(
+            f'Contractor company id ({company_id}) didn\'t match "{company_id_p}".')
         check_failed = True
 
     email_address_p = r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
     if not re.match(email_address_p, email_address):
-        logging.warning(f'Contractor email address ({email_address}) didn\'t match "{email_address_p}".')
+        logging.warning(
+            f'Contractor email address ({email_address}) didn\'t match "{email_address_p}".')
         check_failed = True
 
     logging.info(f'Contractor line check passed: {not check_failed}')
@@ -217,7 +227,8 @@ def check_client_line_format(line, check_passed):
 
     customer_id_p = '.+'
     if not re.match(customer_id_p, customer_id):
-        logging.warning(f'Client customer id ({customer_id}) didn\'t match "{customer_id_p}".')
+        logging.warning(
+            f'Client customer id ({customer_id}) didn\'t match "{customer_id_p}".')
         check_failed = True
 
     if not check_name_format(name):
@@ -230,7 +241,8 @@ def check_client_line_format(line, check_passed):
         check_failed = True
 
     if not check_zip_and_city_format(zip_and_city):
-        logging.warning(f'Client zip city ({street_and_number}) didn\'t match "{STREET_NUMBER_PATTERN}".')
+        logging.warning(
+            f'Client zip city ({street_and_number}) didn\'t match "{STREET_NUMBER_PATTERN}".')
         check_failed = True
 
     logging.info(f'Client line check passed: {not check_failed}')
