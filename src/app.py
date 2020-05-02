@@ -16,7 +16,7 @@ import util.bill_format
 import util.config
 import util.ftp_folders
 
-config_path = '../config.toml'
+config_path = 'config.toml'
 config = util.config.load_config(config_path)
 
 logging.basicConfig(filename='app.log', level=logging.DEBUG,
