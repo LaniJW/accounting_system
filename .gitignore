@@ -1,5 +1,8 @@
 .idea
-rechnung22001.data
-src/app.log
-K123_54321_invoice.xml
+
 config.toml
+
+*.data
+*.xml
+*.log
+*.pyc
