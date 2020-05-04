@@ -108,7 +108,7 @@ def upload_bills(json_bill, xml_bill, txt_bill):
     ps = ftp.connection_manager.create_accounting_server_session(config)
     ps.cwd(util.ftp_folders.get_in_folder(COMPANY_SUBDIR))
 
-    xml_bill_file = io.BytesIO(xml_bill.encode())
+    xml_bill_file = io.BytesIO(xml_bill)
     ps.storbinary(f'STOR {client_id}_{bill_nr}_invoice.xml', xml_bill_file)
 
     txt_bill_file = io.BytesIO(txt_bill.encode())

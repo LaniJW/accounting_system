@@ -1,5 +1,6 @@
 import logging
 import xml.etree.cElementTree as et
+import lxml.etree
 
 import parse.util
 
@@ -19,7 +20,10 @@ def xmlify_bill(json_bill, config):
     add_invoice_summary(root, json_bill)
     logging.info('Added invoice summary to XML.')
 
-    return et.tostring(root, 'utf8').decode('utf-8').replace('\r\n', '\n')
+    xml_string = et.tostring(root, 'utf8')
+    parser = lxml.etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
+    tree = lxml.etree.fromstring(xml_string, parser=parser)
+    return lxml.etree.tostring(tree, pretty_print=True)
 
 
 def add_invoice_header(root, json_bill):
